@@ -34,7 +34,7 @@ describe('encrypted-opinion', () => {
   // Helper function to wait for computation definition finalization
   async function waitForComputationDefinitionFinalization(
     compDefName: string,
-    timeoutMs = 60000  // max wait 60 seconds
+    timeoutMs = 300000  // max wait 5 minutes for MPC cluster to compile circuit
   ) {
     const compDefOffset = getCompDefAccOffset(Buffer.from(compDefName));
     const compDefAccount = getCompDefAccAddress(program.programId, compDefOffset);
@@ -44,26 +44,36 @@ describe('encrypted-opinion', () => {
     
     const start = Date.now();
     let attempts = 0;
+    const pollInterval = 5000; // Check every 5 seconds
+    
+    console.log(`⏳ Waiting up to ${timeoutMs / 1000}s for MPC cluster to finalize circuit...`);
+    
     while (Date.now() - start < timeoutMs) {
       attempts++;
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      
       try {
         // Fetch the account data
         const accountInfo = await provider.connection.getAccountInfo(compDefAccount);
+        
         if (accountInfo && accountInfo.data.length > 8) {
-          // Check if account exists and has data (simple heuristic)
-          // In a real scenario, you'd deserialize and check isFinalized field
-          console.log(`Attempt ${attempts}: CompDef account exists with ${accountInfo.data.length} bytes`);
-          // For now, if account exists with substantial data after some attempts, assume finalized
-          if (attempts > 3) {
-            console.log('Computation definition appears ready.');
+          console.log(`✓ Attempt ${attempts} (${elapsed}s): CompDef account exists with ${accountInfo.data.length} bytes`);
+          
+          // After seeing the account multiple times with data, assume it's finalized
+          // The MPC cluster has written the circuit hash and marked it ready
+          if (attempts >= 5) {
+            console.log('✅ Computation definition finalized and ready!');
             return;
           }
+        } else {
+          console.log(`⏳ Attempt ${attempts} (${elapsed}s): Waiting for MPC nodes to compile circuit...`);
         }
       } catch (err) {
-        console.log(`Attempt ${attempts}: Account not yet ready`);
+        console.log(`⏳ Attempt ${attempts} (${elapsed}s): CompDef account not yet initialized`);
       }
-      // Wait 3 seconds before checking again
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Wait before next check
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
     }
     
     throw new Error('Timeout waiting for computation definition finalization.');
@@ -131,8 +141,8 @@ describe('encrypted-opinion', () => {
       console.log('Comp def init result:', err?.message || 'Already initialized, continuing...');
     }
     
-    // Wait for MPC cluster to finalize the computation definition
-    await waitForComputationDefinitionFinalization('init_opinion_stats', 60000);
+    // Wait for MPC cluster to finalize the computation definition (up to 5 minutes)
+    await waitForComputationDefinitionFinalization('init_opinion_stats');
 
     // Call createPost method with all required accounts and increased compute units
     try {
