@@ -1,5 +1,6 @@
 import * as anchor from '@coral-xyz/anchor';
 import { Program, BN, Wallet } from '@coral-xyz/anchor';
+import { Buffer } from 'buffer';
 import { EncryptedOpinion } from '../target/types/encrypted_opinion';
 import { ComputeBudgetProgram, PublicKey, Keypair } from '@solana/web3.js';
 import { 
@@ -123,8 +124,6 @@ describe('encrypted-opinion', () => {
           payer: wallet.publicKey,
           mxeAccount: mxeAccount,
           compDefAccount: compDefAccount,
-          arciumProgram: ARCIUM_PROGRAM_ID,
-          systemProgram: anchor.web3.SystemProgram.programId,
         })
         .rpc();
       console.log('Computation definition initialized:', initSig);
