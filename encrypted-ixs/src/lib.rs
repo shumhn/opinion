@@ -27,6 +27,18 @@ mod circuits {
         rating: u8,  // 1-5 rating
     }
 
+    /// Represents a single encrypted feedback response
+    pub struct FeedbackResponse {
+        rating: u8,  // 1-5 rating for posts
+    }
+
+    /// Tracks aggregated feedback statistics for an opinion post
+    pub struct FeedbackStats {
+        total_feedback: u32,
+        sum_ratings: u32,
+        rating_counts: [u32; 5],  // Counts for 1-5 ratings
+    }
+
     /// Initializes encrypted vote counters for a new poll.
     ///
     /// Creates a VoteStats structure with zero counts for both yes and no votes.
@@ -119,6 +131,45 @@ mod circuits {
     /// Reveals the aggregated opinion statistics
     #[instruction]
     pub fn reveal_opinion_stats(stats_ctxt: Enc<Mxe, OpinionStats>) -> OpinionStats {
+        let stats = stats_ctxt.to_arcis();
+        stats.reveal()
+    }
+
+    /// Initializes encrypted feedback statistics for an opinion post
+    #[instruction]
+    pub fn init_feedback_stats(mxe: Mxe) -> Enc<Mxe, FeedbackStats> {
+        let stats = FeedbackStats {
+            total_feedback: 0,
+            sum_ratings: 0,
+            rating_counts: [0; 5],
+        };
+        mxe.from_arcis(stats)
+    }
+
+    /// Processes an encrypted feedback response and updates the statistics
+    #[instruction]
+    pub fn submit_feedback(
+        feedback_ctxt: Enc<Shared, FeedbackResponse>,
+        stats_ctxt: Enc<Mxe, FeedbackStats>,
+    ) -> Enc<Mxe, FeedbackStats> {
+        let feedback = feedback_ctxt.to_arcis();
+        let mut stats = stats_ctxt.to_arcis();
+
+        // Update total feedback
+        stats.total_feedback += 1;
+        stats.sum_ratings += feedback.rating as u32;
+
+        // Update rating counts (1-5 to 0-4)
+        if feedback.rating >= 1 && feedback.rating <= 5 {
+            stats.rating_counts[(feedback.rating - 1) as usize] += 1;
+        }
+
+        stats_ctxt.owner.from_arcis(stats)
+    }
+
+    /// Reveals the aggregated feedback statistics
+    #[instruction]
+    pub fn reveal_feedback_stats(stats_ctxt: Enc<Mxe, FeedbackStats>) -> FeedbackStats {
         let stats = stats_ctxt.to_arcis();
         stats.reveal()
     }
