@@ -151,7 +151,7 @@ describe("Encrypted Opinion Platform Tests", () => {
           Array.from(content),
           Array.from(topic)
         )
-        .accounts({
+        .accountsPartial({
           postAccount: postAccount,
           author: provider.wallet.publicKey,
           systemProgram: anchor.web3.SystemProgram.programId,
@@ -192,7 +192,7 @@ describe("Encrypted Opinion Platform Tests", () => {
 
       await program.methods
         .addComment(commentId, Array.from(commentContent))
-        .accounts({
+        .accountsPartial({
           commentAccount: commentAccount,
           postAccount: postAccount,
           author: provider.wallet.publicKey,
