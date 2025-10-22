@@ -6,7 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-encrypted_opinion_mpc = "6CnTSKtXp2eUfGg4mPqTu1TkpUTiJ1BNiqG8c8yuUE47"
+encrypted_opinion_mpc = "AqQHGMDSDezFmf348JaymgPpLSfzswef9EXd1Hw5PUoM"
+
+[programs.devnet]
+encrypted_opinion_mpc = "AqQHGMDSDezFmf348JaymgPpLSfzswef9EXd1Hw5PUoM"
 
 [registry]
 url = "https://api.apr.dev"

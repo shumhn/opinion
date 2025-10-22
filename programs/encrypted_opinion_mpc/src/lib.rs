@@ -11,7 +11,7 @@ const COMP_DEF_OFFSET_INIT_FEEDBACK_STATS: u32 = comp_def_offset("init_feedback_
 const COMP_DEF_OFFSET_SUBMIT_FEEDBACK: u32 = comp_def_offset("submit_feedback");
 const COMP_DEF_OFFSET_REVEAL_FEEDBACK_STATS: u32 = comp_def_offset("reveal_feedback_stats");
 
-declare_id!("6CnTSKtXp2eUfGg4mPqTu1TkpUTiJ1BNiqG8c8yuUE47");
+declare_id!("AqQHGMDSDezFmf348JaymgPpLSfzswef9EXd1Hw5PUoM");
 
 #[arcium_program]
 pub mod encrypted_opinion_mpc {
